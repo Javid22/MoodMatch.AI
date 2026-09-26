@@ -257,4 +257,11 @@ if __name__ == "__main__":
     # Load the model once at startup (instead of lazily on first request) so
     # the very first round doesn't stall waiting for the checkpoint to load.
     get_service()
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+
+    # Defaults keep local dev exactly as before (127.0.0.1 only). Deploying
+    # to a server that needs to accept connections from outside itself (e.g.
+    # the AWS EC2 backend) sets HOST=0.0.0.0 via environment instead of
+    # editing this file.
+    host = os.environ.get("HOST", "127.0.0.1")
+    port = int(os.environ.get("PORT", "8000"))
+    uvicorn.run(app, host=host, port=port)

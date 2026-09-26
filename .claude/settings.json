@@ -43,7 +43,14 @@
       "Bash(curl -s http://127.0.0.1:8000/static/style.css)",
       "Bash(gh auth *)",
       "Bash(aws ec2 *)",
-      "Bash(gh repo *)"
+      "Bash(gh repo *)",
+      "Bash(git config *)",
+      "Bash(gh api *)",
+      "Bash(git commit -q -m 'Initial commit: MoodMatch.Ai ML pipeline + webapp *)",
+      "Bash(git remote *)",
+      "Bash(git branch *)",
+      "Bash(set -e)",
+      "Bash(aws ssm *)"
     ],
     "additionalDirectories": [
       "/Users/javid-67239/mdj/MoodMatch.Ai"
