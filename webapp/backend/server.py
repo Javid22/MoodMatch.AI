@@ -57,6 +57,15 @@ PROJECT_ROOT = os.path.dirname(WEBAPP_DIR)
 FRONTEND_DIR = os.path.join(WEBAPP_DIR, "frontend")
 DATASET_DIR = os.path.join(PROJECT_ROOT, "data", "raw")
 
+# A small, curated, non-webcam subset of the training images (see
+# webapp/backend/target_samples/), committed to the repo and served as the
+# "target emotion" reference photo. Deliberately separate from DATASET_DIR:
+# that folder holds the full training set (excluded from git — large, and
+# partly made up of players' own webcam captures collected below), while
+# this one only ever holds a handful of publishable FER2013 samples per
+# class picked specifically to be shown publicly.
+TARGET_SAMPLES_DIR = os.path.join(BACKEND_DIR, "target_samples")
+
 # When set to "1", every /api/predict call saves the raw webcam frame AND the
 # exact cropped face that was fed to the model, so you can open the files and
 # see precisely what the model saw. Off by default to avoid filling the disk
@@ -118,8 +127,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve sample dataset images (used as "target emotion" pictures) read-only.
-app.mount("/dataset-images", StaticFiles(directory=DATASET_DIR), name="dataset-images")
+# Serve the curated target-emotion reference photos read-only.
+app.mount("/target-images", StaticFiles(directory=TARGET_SAMPLES_DIR), name="target-images")
 
 # Serve frontend static assets (style.css, game.js, etc.)
 app.mount("/static", NoCacheStaticFiles(directory=FRONTEND_DIR), name="static")
@@ -148,7 +157,7 @@ def random_target():
     class_names = service.get_class_names()
 
     emotion = random.choice(class_names)
-    class_dir = os.path.join(DATASET_DIR, emotion)
+    class_dir = os.path.join(TARGET_SAMPLES_DIR, emotion)
 
     try:
         candidates = [
@@ -157,7 +166,7 @@ def random_target():
             if f.lower().endswith((".jpg", ".jpeg", ".png"))
         ]
         filename = random.choice(candidates)
-        image_url = f"/dataset-images/{emotion}/{filename}"
+        image_url = f"/target-images/{emotion}/{filename}"
     except (FileNotFoundError, IndexError):
         image_url = None
 

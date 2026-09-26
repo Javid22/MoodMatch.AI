@@ -50,7 +50,27 @@
       "Bash(git remote *)",
       "Bash(git branch *)",
       "Bash(set -e)",
-      "Bash(aws ssm *)"
+      "Bash(aws ssm *)",
+      "Bash(git commit -q -m 'Make bind host/port configurable via env for server deployment *)",
+      "Bash(curl -s -m 10 http://13.126.149.202:8000/api/random-target)",
+      "Bash(ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=8 -i ~/.ssh/denoise-ai-key.pem ubuntu@13.126.149.202 'sudo systemctl is-active moodmatch; sudo tail -n 15 /var/log/moodmatch-setup.log')",
+      "Bash(gh variable *)",
+      "Bash(curl -s https://javid22.github.io/MoodMatch.AI/)",
+      "Bash(curl -s -m 5 -o /dev/null -w \"%{http_code}\\\\n\" http://13.126.149.202:8000/api/random-target)",
+      "Bash(aws cloudfront *)",
+      "Bash(ls -la ~/.ssh/ 2>&1 | grep -i denoise *)",
+      "Read(//Users/javid-67239/.ssh/**)",
+      "Bash(chmod 400 /Users/javid-67239/mdj/noise_reduce/infra/aws-ec2/denoise-ai-key.pem)",
+      "Bash(ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=8 -i /Users/javid-67239/mdj/noise_reduce/infra/aws-ec2/denoise-ai-key.pem ubuntu@13.207.85.230 \"sudo systemctl is-active moodmatch && echo OK\")",
+      "Bash(scp -i /Users/javid-67239/mdj/noise_reduce/infra/aws-ec2/denoise-ai-key.pem -o StrictHostKeyChecking=accept-new /private/tmp/claude-502/-Users-javid-67239-mdj-MoodMatch-Ai/908433d9-4234-46ad-8da8-eef518a03427/scratchpad/setup-https.sh ubuntu@13.207.85.230:/tmp/setup-https.sh)",
+      "Bash(ssh -i /Users/javid-67239/mdj/noise_reduce/infra/aws-ec2/denoise-ai-key.pem -o StrictHostKeyChecking=accept-new ubuntu@13.207.85.230 'chmod +x /tmp/setup-https.sh && /tmp/setup-https.sh')",
+      "Bash(curl -s -m 10 https://13-207-85-230.sslip.io/api/random-target)",
+      "Bash(curl -s -m 10 -o /dev/null -w \"%{http_code}\\\\n\" https://13-207-85-230.sslip.io/)",
+      "Bash(curl -s https://javid22.github.io/MoodMatch.AI/style.css)",
+      "Bash(curl -s https://javid22.github.io/MoodMatch.AI/game.js)",
+      "Bash(curl -s \"https://javid22.github.io/MoodMatch.AI/?nocache=$\\(date +%s\\)\" -H \"Cache-Control: no-cache\")",
+      "Bash(curl -sI https://javid22.github.io/MoodMatch.AI/)",
+      "Bash(curl -s -m 15 -X POST https://13-207-85-230.sslip.io/api/predict -F \"image=@/tmp/test.jpg\" -F \"target_emotion=happy\")"
     ],
     "additionalDirectories": [
       "/Users/javid-67239/mdj/MoodMatch.Ai"

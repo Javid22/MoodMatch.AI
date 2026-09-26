@@ -361,7 +361,7 @@ async function loadNewTarget() {
     const res = await fetch(`${API_BASE}/api/random-target`);
     const data = await res.json();
     state.target = data;
-    // image_url comes back as a root-relative path (e.g. "/dataset-images/...")
+    // image_url comes back as a root-relative path (e.g. "/target-images/...")
     // meant to be resolved against the backend's own origin.
     el.targetImage.src = data.image_url ? `${API_BASE}${data.image_url}` : "";
     el.targetEmoji.textContent = data.emoji || EMOJI[data.emotion] || "";
