@@ -1,0 +1,52 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(lsof -nP -iTCP:8000 -sTCP:LISTEN)",
+      "Bash(kill -9 16294)",
+      "WebSearch",
+      "Bash(cd /Users/javid-67239/mdj/MoodMatch.Ai/debug_captures && rm -f box_*.jpg *_face_v2.jpg *_face_recheck.jpg *_face_fixed.jpg *_face_v3.jpg verify_v3.jpg)",
+      "Bash(curl -s -D - -o /dev/null http://127.0.0.1:8000/static/game.js)",
+      "Bash(curl -s http://127.0.0.1:8000/)",
+      "Bash(kill 25646)",
+      "Bash(curl -s -o /dev/null -w \"index.html status: %{http_code}\\\\n\" http://127.0.0.1:8000/)",
+      "Bash(curl -s -X POST http://127.0.0.1:8000/api/predict -F 'image=@debug_captures/20260923-145414-670_face.jpg;type=image/jpeg' -F target_emotion=happy)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s -i -X POST http://127.0.0.1:8000/api/predict -F 'image=@debug_captures/20260923-145414-670_face.jpg;type=image/jpeg' -F target_emotion=happy)",
+      "Bash(awk '{print $NF}')",
+      "Bash(kill 19310)",
+      "Bash(xargs -I{} sh -c 'echo -n \"{}: \"; ls /Users/javid-67239/mdj/MoodMatch.Ai/data/raw/{} | wc -l')",
+      "Bash(curl -s -X POST http://127.0.0.1:8000/api/predict -F 'image=@/Users/javid-67239/mdj/MoodMatch.Ai/debug_captures/20260926-093943-044_angry_raw.jpg;type=image/jpeg' -F target_emotion=angry)",
+      "Bash(curl -sv -X POST http://127.0.0.1:8000/api/predict -F 'image=@/Users/javid-67239/mdj/MoodMatch.Ai/debug_captures/20260926-093943-044_angry_raw.jpg;type=image/jpeg' -F target_emotion=angry)",
+      "Bash(curl -s -o /dev/null -w \"status: %{http_code}\\\\n\" http://127.0.0.1:8000/)",
+      "Bash(ps -p 22216 -o pid,ppid,etime,stat,command)",
+      "Bash(kill -9 22216)",
+      "Bash(curl -s -m 5 -o /dev/null -w \"index status: %{http_code}\\\\n\" http://127.0.0.1:8000/)",
+      "Bash(kill -9 23250)",
+      "Bash(python3 -c \"import os; print\\(os.path.samefile\\('CLAUDE.md','claude.md'\\)\\)\")",
+      "Bash(python3 -c \"import html.parser\")",
+      "WebFetch(domain:emoggle.com)",
+      "Bash(node -c webapp/frontend/game.js)",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s -o /tmp/index_check.html -w \"HTTP status: %{http_code}\\\\n\" http://127.0.0.1:8000/)",
+      "Bash(curl -s -o /dev/null -w \"style.css: %{http_code}\\\\n\" http://127.0.0.1:8000/static/style.css)",
+      "Bash(curl -s -o /dev/null -w \"game.js: %{http_code}\\\\n\" http://127.0.0.1:8000/static/game.js)",
+      "Bash(curl -s http://127.0.0.1:8000/static/game.js)",
+      "Bash(curl -sI http://127.0.0.1:8000/)",
+      "Bash(xxd)",
+      "Read(//Applications/Google Chrome.app/**)",
+      "Bash(node -e \"require\\('puppeteer'\\)\")",
+      "Bash(npx --yes playwright --version)",
+      "Bash(npx --yes playwright install chromium)",
+      "Bash(node inspect.js)",
+      "Bash(node inspect2.js)",
+      "Bash(rm -f /Users/javid-67239/mdj/MoodMatch.Ai/webapp/backend/__pycache__/*.pyc)",
+      "Bash(curl -s http://127.0.0.1:8000/static/style.css)",
+      "Bash(gh auth *)",
+      "Bash(aws ec2 *)",
+      "Bash(gh repo *)"
+    ],
+    "additionalDirectories": [
+      "/Users/javid-67239/mdj/MoodMatch.Ai"
+    ]
+  }
+}

@@ -1,0 +1,692 @@
+/* ==========================================================================
+   MoodMatch.AI — game UI
+   Modern glassmorphism / casual-game aesthetic.
+   ========================================================================== */
+
+:root {
+  --bg-deep: #ffffff;
+  --bg-deep-2: #f3fbf6;
+  --accent-pink: #ff2ea6;
+  --accent-pink-soft: #ff8bcb;
+  --accent-green: #14e37b;
+  --accent-green-soft: #7bffb8;
+  --accent-red: #ff3b7f;
+  --accent-yellow: #f5a524;
+  --text-main: #16192b;
+  --text-muted: #6b7280;
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(20, 227, 123, 0.25);
+}
+
+* { box-sizing: border-box; }
+
+/* `background` is set on <html> only (not <body>) on purpose: per the CSS
+   spec, when <html> has an explicit background it becomes the page's canvas
+   background (painted at the very back), but <body> would otherwise still
+   paint its OWN background as a normal in-flow box — which paints *above*
+   any negative z-index descendant (#bg-glow, #emoji-bg-layer used to rely on
+   z-index -2/-1 and were invisible, silently covered by body's own opaque
+   white background, painted on top of them every time). Giving <body> no
+   background of its own removes that extra opaque layer entirely. */
+html {
+  background: var(--bg-deep);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  color: var(--text-main);
+  overflow-x: hidden;
+}
+
+/* #bg-glow and #emoji-bg-layer keep negative z-index on purpose: position:fixed
+   elements with z-index:auto still paint *after* normal in-flow content (the
+   .screen sections) per CSS stacking rules, regardless of DOM order — so
+   dropping z-index here would flip these layers to render ON TOP of the UI
+   instead of behind it. Negative z-index is what correctly puts them in the
+   "behind everything" paint step; the html-only background above is the fix
+   for the actual bug (body's own opaque background covering them). */
+#bg-glow {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(circle at 12% 15%, rgba(20, 227, 123, 0.16), transparent 42%),
+    radial-gradient(circle at 88% 12%, rgba(255, 46, 166, 0.14), transparent 42%),
+    radial-gradient(circle at 50% 95%, rgba(20, 227, 123, 0.12), transparent 45%),
+    linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-deep-2) 100%);
+}
+
+/* ---------------------------- Floating emoji background ----------------------------
+   Purely decorative — a slow drift of mood emojis behind the glass panels, filled in
+   at runtime by game.js (initFloatingEmojiBackground). Sits above #bg-glow's gradient
+   but below every real UI element, and never intercepts clicks. */
+
+#emoji-bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Position/rotation/opacity here are driven every frame from JS
+   (initFloatingEmojiBackground's requestAnimationFrame loop in game.js) via
+   `transform` and `opacity` directly on the element — a "DVD screensaver"
+   style bounce, not a fixed CSS keyframe path, since each emoji needs to
+   reverse direction whenever it actually hits a screen edge (which depends
+   on the live viewport size, not something @keyframes can express). */
+.floating-emoji {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+  transition: opacity 0.6s ease; /* only the initial fade-in uses a transition */
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
+}
+
+/* Respect reduced-motion: keep the emojis as a faint static field instead of
+   animating them — same decorative presence, no motion. JS skips the
+   animation loop and only sets one fixed transform/opacity per element. */
+@media (prefers-reduced-motion: reduce) {
+  .floating-emoji {
+    transition: none;
+  }
+}
+
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 8px 32px rgba(20, 227, 123, 0.1), 0 2px 10px rgba(255, 46, 166, 0.06);
+}
+
+.screen {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* Screens are shown/hidden by toggling the `hidden` attribute in game.js.
+   The browser's default [hidden]{display:none} rule is a user-agent style,
+   which normal author rules (like `.screen{display:flex}` above) always
+   win against even at equal specificity — so without this explicit rule
+   every screen rendered at once, stacked on top of each other. */
+.screen[hidden] {
+  display: none;
+}
+
+/* ---------------------------- Buttons ---------------------------- */
+
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 14px 34px;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-green), var(--accent-pink));
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.03);
+}
+
+.btn-glow {
+  box-shadow: 0 0 24px rgba(20, 227, 123, 0.4), 0 0 24px rgba(255, 46, 166, 0.25);
+}
+
+.btn-ghost {
+  background: rgba(20, 227, 123, 0.08);
+  color: var(--text-main);
+  border: 1px solid var(--glass-border);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: rgba(20, 227, 123, 0.16);
+}
+
+/* ---------------------------- Start screen ---------------------------- */
+
+.start-card {
+  max-width: 480px;
+  width: 100%;
+  padding: 48px 40px;
+  text-align: center;
+}
+
+.logo-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.logo-emoji {
+  font-size: 2.4rem;
+}
+
+.logo-emoji.small {
+  font-size: 1.8rem;
+}
+
+.logo-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.accent {
+  background: linear-gradient(135deg, var(--accent-green), var(--accent-pink));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.tagline {
+  color: var(--text-muted);
+  font-size: 1.05rem;
+  margin: 0 0 28px;
+}
+
+.emotion-preview {
+  font-size: 2.4rem;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-bottom: 32px;
+}
+
+.emotion-preview span {
+  animation: bob 2.6s ease-in-out infinite;
+}
+.emotion-preview span:nth-child(2) { animation-delay: 0.2s; }
+.emotion-preview span:nth-child(3) { animation-delay: 0.4s; }
+.emotion-preview span:nth-child(4) { animation-delay: 0.6s; }
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.error-text {
+  color: var(--accent-red);
+  margin-top: 18px;
+  font-size: 0.9rem;
+}
+
+/* ---------------------------- Game header ---------------------------- */
+
+#screen-game {
+  justify-content: flex-start;
+  max-width: 1100px;
+  margin: 0 auto;
+  gap: 20px;
+}
+
+.game-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 26px;
+  margin-top: 8px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.header-sub {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.score-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(20, 227, 123, 0.1);
+  border: 1px solid rgba(20, 227, 123, 0.35);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #0a9b57;
+}
+
+.score-pill.bump {
+  animation: scoreBump 0.4s ease;
+}
+
+@keyframes scoreBump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.hearts {
+  display: flex;
+  gap: 4px;
+  font-size: 1.3rem;
+}
+
+.icon-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: rgba(20, 227, 123, 0.08);
+  font-size: 1.15rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+}
+
+.icon-btn:hover {
+  transform: translateY(-1px) scale(1.05);
+  background: rgba(20, 227, 123, 0.16);
+}
+
+.icon-btn.camera-off {
+  background: rgba(255, 46, 166, 0.1);
+  border-color: rgba(255, 46, 166, 0.3);
+}
+
+.heart {
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.heart.lost {
+  filter: grayscale(1) opacity(0.35);
+  transform: scale(0.85) rotate(-15deg);
+}
+
+.heart.just-lost {
+  animation: heartPop 0.5s ease;
+}
+
+@keyframes heartPop {
+  0% { transform: scale(1.6); }
+  100% { transform: scale(0.85) rotate(-15deg); }
+}
+
+/* ---------------------------- Game grid ---------------------------- */
+
+.game-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding-bottom: 30px;
+}
+
+.panel {
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.panel-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  margin: 0 0 16px;
+}
+
+/* Target panel */
+
+.target-image-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 280px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(20, 227, 123, 0.06);
+  margin-bottom: 18px;
+  border: 1px solid var(--glass-border);
+}
+
+#target-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.target-emoji {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  font-size: 2.2rem;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+}
+
+.target-name {
+  margin: 0 0 6px;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.target-instruction {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  min-height: 1.4em;
+}
+
+/* Player / webcam panel */
+
+.webcam-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 1 / 1;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #05070f;
+  border: 1px solid var(--glass-border);
+  margin-bottom: 14px;
+}
+
+#webcam-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1); /* mirror, feels natural */
+}
+
+/* Shown briefly in place of the live video right when a capture is taken,
+   so the player sees the exact frame the AI is analyzing ("freeze"). */
+#capture-canvas.frozen-frame {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 2;
+  animation: freezeFlash 0.3s ease;
+}
+
+@keyframes freezeFlash {
+  0% { filter: brightness(1.8); }
+  100% { filter: brightness(1); }
+}
+
+.webcam-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+  background: rgba(5, 7, 15, 0.72);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.webcam-overlay.hidden-overlay {
+  display: none;
+}
+
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 5rem;
+  font-weight: 900;
+  color: white;
+  background: rgba(5, 7, 15, 0.35);
+  text-shadow: 0 0 24px rgba(255, 255, 255, 0.6);
+}
+
+/* Same fix as `.screen[hidden]`: `.countdown { display: flex }` above is an
+   author rule and always wins over the browser's default
+   `[hidden] { display: none }` (a user-agent rule), even at equal
+   selector specificity — so without this, setting `.hidden = true` in
+   game.js had no visible effect. */
+.countdown[hidden] {
+  display: none;
+}
+
+.countdown.pulse {
+  animation: countdownPulse 1s ease;
+}
+
+@keyframes countdownPulse {
+  0% { transform: scale(1.6); opacity: 0; }
+  40% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 1; }
+}
+
+.result-flash {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Must render above #capture-canvas.frozen-frame (z-index: 2) — the
+     verdict popup (message + Try Again button) is meant to sit on top of
+     the frozen captured expression, not behind it. Without this the whole
+     popup was invisible any time the frozen frame was showing, even
+     though its content was set correctly and the game state was fine. */
+  z-index: 3;
+}
+
+/* Same fix as above — without this, a hidden result-flash (e.g. the
+   "PERFECT MATCH!" or "NOT A MATCH" box) stayed visibly rendered into the
+   next round because `display: flex` here overrides `[hidden]`. */
+.result-flash[hidden] {
+  display: none;
+}
+
+.result-flash-inner {
+  text-align: center;
+  padding: 14px;
+  border-radius: 16px;
+  backdrop-filter: blur(4px);
+  animation: resultPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes resultPop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.result-flash.success .result-flash-inner {
+  background: rgba(52, 211, 153, 0.22);
+  border: 1px solid rgba(52, 211, 153, 0.6);
+}
+
+.result-flash.fail .result-flash-inner {
+  background: rgba(251, 113, 133, 0.22);
+  border: 1px solid rgba(251, 113, 133, 0.6);
+}
+
+.result-flash.info .result-flash-inner {
+  background: rgba(251, 191, 36, 0.18);
+  border: 1px solid rgba(251, 191, 36, 0.5);
+}
+
+.result-emoji {
+  font-size: 2.6rem;
+  margin: 0;
+}
+
+.result-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin: 4px 0 2px;
+}
+
+.result-detail {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+  max-width: 220px;
+}
+
+.result-flash-btn {
+  margin-top: 14px;
+  min-width: 160px;
+  padding: 10px 20px;
+  font-size: 0.85rem;
+}
+
+.analysis-status {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  min-height: 1.3em;
+}
+
+#btn-ready {
+  min-width: 200px;
+}
+
+/* ---------------------------- Game over screen ---------------------------- */
+
+.gameover-card { padding: 52px 40px; }
+
+.gameover-label {
+  font-size: 2.4rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  margin: 0 0 6px;
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-green));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.gameover-sub {
+  color: var(--text-muted);
+  margin: 0 0 26px;
+}
+
+.final-score-block {
+  margin-bottom: 30px;
+}
+
+.final-score-label {
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.final-score-value {
+  font-size: 3.4rem;
+  font-weight: 900;
+  margin: 4px 0 0;
+  color: var(--accent-green);
+}
+
+/* ---------------------------- Confetti ---------------------------- */
+
+#confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  overflow: hidden;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  width: 8px;
+  height: 14px;
+  opacity: 0.9;
+  animation: confettiFall linear forwards;
+}
+
+@keyframes confettiFall {
+  to {
+    transform: translateY(110vh) rotate(540deg);
+    opacity: 0.3;
+  }
+}
+
+/* ---------------------------- Responsive ---------------------------- */
+
+@media (max-width: 820px) {
+  .game-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-header {
+    flex-direction: column;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .start-card, .gameover-card {
+    padding: 34px 22px;
+  }
+
+  .logo-title {
+    font-size: 1.7rem;
+  }
+}

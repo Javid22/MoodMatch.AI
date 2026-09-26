@@ -1,0 +1,66 @@
+name: Deploy frontend to GitHub Pages
+
+# Publishes webapp/frontend/ as a static site on GitHub Pages, pointed at the
+# AWS backend via the API_BASE_URL repository variable (Settings > Secrets and
+# variables > Actions > Variables), e.g. http://<ec2-public-ip>:8000
+# The files in webapp/frontend/ are left untouched — this workflow only
+# rewrites a throwaway copy in the "dist" build step.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "webapp/frontend/**"
+      - ".github/workflows/deploy-pages.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build static site with backend URL injected
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp webapp/frontend/index.html webapp/frontend/style.css webapp/frontend/game.js dist/
+
+          if [ -z "${API_BASE_URL:-}" ]; then
+            echo "::warning::API_BASE_URL repo variable is not set — the deployed page will call relative /api paths, which will 404 since the backend isn't on this same origin."
+          fi
+
+          # index.html was written to be served under FastAPI's /static/ mount;
+          # on Pages the files sit next to it, so drop that path prefix.
+          sed -i \
+            -e "s#/static/style.css#style.css#" \
+            -e "s#/static/game.js#game.js#" \
+            -e "s#<meta name=\"moodmatch-api-base\" content=\"\" />#<meta name=\"moodmatch-api-base\" content=\"${API_BASE_URL}\" />#" \
+            dist/index.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

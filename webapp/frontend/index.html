@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MoodMatch.AI</title>
+<!-- Backend origin, filled in only for the GitHub Pages build (see
+     .github/workflows/deploy-pages.yml). Left blank here, game.js falls
+     back to same-origin "/api/..." calls, i.e. no change when this page is
+     served by the FastAPI backend itself. -->
+<meta name="moodmatch-api-base" content="" />
+<link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<div id="bg-glow"></div>
+<div id="emoji-bg-layer" aria-hidden="true"></div>
+
+<!-- ======================= START SCREEN ======================= -->
+<section id="screen-start" class="screen">
+  <div class="start-card glass">
+    <div class="logo-row">
+      <span class="logo-emoji">🎭</span>
+      <h1 class="logo-title">MoodMatch<span class="accent">.AI</span></h1>
+    </div>
+    <p class="tagline">Match your face to the emotion before the AI catches you!</p>
+
+    <div class="emotion-preview">
+      <span>😠</span><span>😊</span><span>😐</span><span>😢</span>
+    </div>
+
+    <button id="btn-start" class="btn btn-primary btn-glow">START GAME</button>
+
+    <p id="start-error" class="error-text" hidden></p>
+  </div>
+</section>
+
+<!-- ======================= GAME SCREEN ======================= -->
+<section id="screen-game" class="screen" hidden>
+
+  <header class="game-header glass">
+    <div class="header-left">
+      <span class="logo-emoji small">🎭</span>
+      <div>
+        <h2 class="header-title">MoodMatch<span class="accent">.AI</span></h2>
+        <p class="header-sub">Can you fool the AI?</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="score-pill" id="score-pill">
+        <span>⭐</span>
+        <span id="score-value">0</span>
+      </div>
+      <div class="hearts" id="hearts-row">
+        <span class="heart" data-i="0">❤️</span>
+        <span class="heart" data-i="1">❤️</span>
+        <span class="heart" data-i="2">❤️</span>
+      </div>
+      <button id="btn-camera-toggle" class="icon-btn" title="Disable camera" aria-label="Disable camera">📷</button>
+    </div>
+  </header>
+
+  <main class="game-grid">
+
+    <!-- Target card -->
+    <div class="panel glass target-panel">
+      <p class="panel-label">TARGET EMOTION</p>
+      <div class="target-image-wrap">
+        <img id="target-image" alt="Target expression" />
+        <div class="target-emoji" id="target-emoji">😊</div>
+      </div>
+      <h3 class="target-name" id="target-name">HAPPY</h3>
+      <p class="target-instruction" id="target-instruction">Show your biggest smile!</p>
+    </div>
+
+    <!-- Webcam / player card -->
+    <div class="panel glass player-panel">
+      <p class="panel-label">YOUR EXPRESSION</p>
+
+      <div class="webcam-wrap" id="webcam-wrap">
+        <video id="webcam-video" autoplay playsinline muted></video>
+        <canvas id="capture-canvas" hidden></canvas>
+
+        <div class="webcam-overlay" id="webcam-overlay">
+          <p id="webcam-status">Requesting camera…</p>
+        </div>
+
+        <div class="countdown" id="countdown" hidden></div>
+
+        <div class="result-flash" id="result-flash" hidden>
+          <div class="result-flash-inner">
+            <p class="result-emoji" id="result-emoji"></p>
+            <p class="result-title" id="result-title"></p>
+            <p class="result-detail" id="result-detail"></p>
+            <button id="btn-flash-continue" class="btn btn-primary btn-glow result-flash-btn" hidden>TRY AGAIN</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="analysis-status" id="analysis-status">Get ready…</p>
+
+      <button id="btn-ready" class="btn btn-primary btn-glow" hidden>I'M READY</button>
+    </div>
+
+  </main>
+</section>
+
+<!-- ======================= GAME OVER SCREEN ======================= -->
+<section id="screen-gameover" class="screen" hidden>
+  <div class="start-card glass gameover-card">
+    <p class="gameover-label">GAME OVER</p>
+    <p class="gameover-sub">The AI got you! 🤖</p>
+    <div class="final-score-block">
+      <p class="final-score-label">FINAL SCORE</p>
+      <p class="final-score-value" id="final-score-value">0</p>
+    </div>
+    <button id="btn-retry" class="btn btn-primary btn-glow">TRY AGAIN</button>
+  </div>
+</section>
+
+<div id="confetti-layer"></div>
+
+<script src="/static/game.js"></script>
+</body>
+</html>

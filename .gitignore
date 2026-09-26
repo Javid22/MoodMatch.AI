@@ -1,0 +1,24 @@
+# Python
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+.DS_Store
+
+# Dataset images (large + personal webcam captures) — keep folder structure only
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Debug captures from local dev sessions (webcam frames) — never publish these
+debug_captures/
+
+# Large/regeneratable checkpoint — best_model.pth is kept (needed by the deployed
+# backend), final_model.pth is a redundant duplicate produced at the end of training
+models/checkpoints/final_model.pth
+
+# Editor/OS cruft
+.vscode/
+.idea/
+*.swp
